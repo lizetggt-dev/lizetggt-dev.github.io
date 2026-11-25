@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recomendador de Cultivos — UPTLAX</title>
+  <style>
+    :root {
+      --bg: #f4f7f2;
+      --card: #ffffff;
+      --primary: #2d6a4f;
+      --primary-hover: #1b4332;
+      --accent: #74c69d;
+      --text: #1b262c;
+      --muted: #52606d;
+      --border: #d9e2ec;
+      --success-bg: #d8f3dc;
+      --success-text: #1b4332;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(160deg, var(--bg) 0%, #e6efe8 100%);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 12px 30px rgba(27, 67, 50, 0.08);
+    }
+
+    header {
+      margin-bottom: 1.75rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1rem;
+    }
+
+    .badge {
+      display: inline-block;
+      background: var(--success-bg);
+      color: var(--success-text);
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 0.25rem 0.65rem;
+      border-radius: 999px;
+      margin-bottom: 0.5rem;
+      letter-spacing: 0.02em;
+    }
+
+    h1 {
+      font-size: 1.65rem;
+      color: var(--primary-hover);
+      margin-bottom: 0.35rem;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem 1.25rem;
+    }
+
+    @media (max-width: 580px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    label {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    input[type="number"] {
+      width: 100%;
+      padding: 0.6rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.95rem;
+      color: var(--text);
+      background: #fafcfb;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    input[type="number"]:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.15);
+      background: #ffffff;
+    }
+
+    .summary-bar {
+      margin-top: 1.25rem;
+      padding: 0.85rem 1rem;
+      background: #f8faf9;
+      border: 1px dashed var(--accent);
+      border-radius: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 0.75rem;
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+
+    .summary-bar strong {
+      color: var(--primary-hover);
+    }
+
+    .actions {
+      margin-top: 1.5rem;
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    button {
+      flex: 1;
+      background: var(--primary);
+      color: #ffffff;
+      border: none;
+      border-radius: 10px;
+      padding: 0.8rem 1.25rem;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+
+    button:hover {
+      background: var(--primary-hover);
+    }
+
+    button.secondary {
+      flex: 0 0 auto;
+      background: #edf2f7;
+      color: var(--text);
+    }
+
+    button.secondary:hover {
+      background: #e2e8f0;
+    }
+
+    .result-box {
+      margin-top: 1.5rem;
+      padding: 1.1rem 1.25rem;
+      border-radius: 12px;
+      background: var(--success-bg);
+      color: var(--success-text);
+      border: 1px solid var(--accent);
+      display: none;
+    }
+
+    .result-box.visible {
+      display: block;
+    }
+
+    .result-title {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+    }
+
+    .result-crop {
+      font-size: 1.35rem;
+      font-weight: 800;
+    }
+
+    .result-note {
+      margin-top: 0.4rem;
+      font-size: 0.85rem;
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <header>
+      <span class="badge">UPTLAX · Hackathon</span>
+      <h1>Recomendador de Cultivos</h1>
+      <p class="subtitle">
+        Interfaz HTML base para capturar parámetros de suelo y clima (ideal para conectar con tu backend o API).
+      </p>
+    </header>
+
+    <form id="crop-form">
+      <div class="grid">
+        <div class="field">
+          <label for="n">Nitrógeno (N)</label>
+          <input type="number" id="n" name="N" step="any" min="0" value="60" required />
+        </div>
+
+        <div class="field">
+          <label for="p">Fósforo (P)</label>
+          <input type="number" id="p" name="P" step="any" min="0" value="45" required />
+        </div>
+
+        <div class="field">
+          <label for="k">Potasio (K)</label>
+          <input type="number" id="k" name="K" step="any" min="0" value="45" required />
+        </div>
+
+        <div class="field">
+          <label for="ph">pH del suelo</label>
+          <input type="number" id="ph" name="pH" step="0.1" min="0" max="14" value="6.5" required />
+        </div>
+
+        <div class="field">
+          <label for="temp_max">Temperatura máxima (°C)</label>
+          <input type="number" id="temp_max" name="temp_max" step="any" value="23" required />
+        </div>
+
+        <div class="field">
+          <label for="temp_min">Temperatura mínima (°C)</label>
+          <input type="number" id="temp_min" name="temp_min" step="any" value="7" required />
+        </div>
+
+        <div class="field">
+          <label for="humedad">Humedad relativa (%)</label>
+          <input type="number" id="humedad" name="humedad" step="any" min="0" max="100" value="65" required />
+        </div>
+
+        <div class="field">
+          <label for="precipitacion">Precipitación (mm)</label>
+          <input type="number" id="precipitacion" name="precipitacion" step="any" min="0" value="120" required />
+        </div>
+      </div>
+
+      <div class="summary-bar">
+        <span>NPK_total: <strong id="npk-total">150</strong></span>
+        <span>Diferencial_termico_Tlaxcala: <strong id="diff-termica">16 °C</strong></span>
+      </div>
+
+      <div class="actions">
+        <button type="submit">Calcular recomendación</button>
+        <button type="button" class="secondary" id="reset-btn">Limpiar</button>
+      </div>
+    </form>
+
+    <section class="result-box" id="result-box" aria-live="polite">
+      <div class="result-title">Cultivo sugerido (vista previa)</div>
+      <div class="result-crop" id="result-crop">—</div>
+      <p class="result-note" id="result-note"></p>
+    </section>
+  </main>
+
+  <script>
+    const form = document.getElementById("crop-form");
+    const resetBtn = document.getElementById("reset-btn");
+    const npkTotalEl = document.getElementById("npk-total");
+    const diffTermicaEl = document.getElementById("diff-termica");
+    const resultBox = document.getElementById("result-box");
+    const resultCrop = document.getElementById("result-crop");
+    const resultNote = document.getElementById("result-note");
+
+    function updateDerivedMetrics() {
+      const n = parseFloat(document.getElementById("n").value) || 0;
+      const p = parseFloat(document.getElementById("p").value) || 0;
+      const k = parseFloat(document.getElementById("k").value) || 0;
+      const tMax = parseFloat(document.getElementById("temp_max").value) || 0;
+      const tMin = parseFloat(document.getElementById("temp_min").value) || 0;
+
+      const npkTotal = n + p + k;
+      const diffTermica = tMax - tMin;
+
+      npkTotalEl.textContent = Number(npkTotal.toFixed(2));
+      diffTermicaEl.textContent = `${Number(diffTermica.toFixed(2))} °C`;
+      return { npkTotal, diffTermica };
+    }
+
+    form.addEventListener("input", updateDerivedMetrics);
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const { npkTotal, diffTermica } = updateDerivedMetrics();
+      const ph = parseFloat(document.getElementById("ph").value) || 6.5;
+      const precip = parseFloat(document.getElementById("precipitacion").value) || 0;
+
+      // Estimación visual de ejemplo en el navegador; para usar modelo_cultivos_top20.joblib
+      // con scikit-learn==1.5.2, conecta este envío a tu endpoint o usa tu app de Streamlit.
+      let cultivo = "Maíz";
+      if (precip >= 150 && npkTotal >= 140) {
+        cultivo = "Frijol / Hortalizas de ciclo corto";
+      } else if (diffTermica >= 14 && ph >= 5.8 && ph <= 7.2) {
+        cultivo = "Maíz / Cebada (perfil templado)";
+      } else {
+        cultivo = "Avena forrajera / Amaranto";
+      }
+
+      resultCrop.textContent = cultivo;
+      resultNote.textContent = `Parámetros enviados -> NPK_total: ${Number(npkTotal.toFixed(2))}, Diferencial térmico: ${Number(diffTermica.toFixed(2))} °C, pH: ${ph}.`;
+      resultBox.classList.add("visible");
+    });
+
+    resetBtn.addEventListener("click", () => {
+      form.reset();
+      updateDerivedMetrics();
+      resultBox.classList.remove("visible");
+    });
+
+    updateDerivedMetrics();
+  </script>
+</body>
+</html>
